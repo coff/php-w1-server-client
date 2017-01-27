@@ -1,0 +1,13 @@
+{
+    "name": "coff/w1-server-client",
+    "description": "One-Wire (1-wire) devices server & client",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Krzysztof Kubanek",
+            "email": "krzysztof.kubanek@gmail.com"
+        }
+    ],
+    "require": {}
+}
