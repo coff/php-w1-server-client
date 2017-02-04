@@ -71,7 +71,7 @@ class AsyncW1Client extends W1Client
             return false;
         }
 
-        fwrite($this->socket, $this->buildRequest()->asXML());
+        fwrite($this->socket, $this->transport->getQuery());
 
         $this->state = self::STATE_REPLY_AWAIT;
         return true;
@@ -98,7 +98,7 @@ class AsyncW1Client extends W1Client
             $data.= fread($this->socket, 1024);
         }
 
-        $this->analyzeReply($data);
+        $this->transport->parseReply($data);
 
         return true;
     }

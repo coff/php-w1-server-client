@@ -4,9 +4,8 @@ namespace OneWire\DataSource;
 
 use OneWire\Client\W1Client;
 
-class W1ServerDataSource extends DataSource
+class W1ServerDataSource extends W1DataSource
 {
-    protected $id;
 
     /**
      * @var W1Client
@@ -20,6 +19,21 @@ class W1ServerDataSource extends DataSource
 
     public function setClient(W1Client $client) {
         $this->client = $client;
+
+        return $this;
+    }
+
+    public function request()
+    {
+        // what to implement here?
+
+        return $this;
+    }
+
+    public function setValue($value) {
+        $this->value;
+
+        return $this;
     }
 
     public function update() {

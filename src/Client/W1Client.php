@@ -2,6 +2,8 @@
 
 namespace OneWire\Client;
 
+use OneWire\ClientTransport\W1ClientTransport;
+use OneWire\DataSource\DataSource;
 use OneWire\DataSource\W1ServerDataSource;
 use OneWire\Exception\OneWireException;
 
@@ -16,20 +18,44 @@ use OneWire\Exception\OneWireException;
  */
 class W1Client
 {
+    /**
+     * @var W1ServerDataSource[]
+     */
     protected $dataSources;
 
     protected $socket;
     protected $socketName;
-    protected $autoDiscovery;
+    protected $autoDiscovery=false;
+    protected $autoDiscoveryCallback;
 
-    public function __construct($socketName='tcp://0.0.0.0:8000', $autoDiscovery = false)
+    /**
+     * Transport layer object
+     *
+     * @var W1ClientTransport
+     */
+    protected $transport;
+
+    public function __construct($socketName='tcp://0.0.0.0:8000')
     {
         $this->socketName = $socketName;
-        $this->autoDiscovery = $autoDiscovery;
+    }
+
+    /**
+     * Sets Transport layer object for client
+     *
+     * @param W1ClientTransport $transport
+     *
+     * @return $this
+     */
+    public function setTransport(W1ClientTransport $transport) {
+        $this->transport = $transport;
+
+        return $this;
     }
 
     public function createDataSourceById($id) {
         $this->dataSources[$id] = new W1ServerDataSource($id);
+        $this->transport->addDataSource($this->dataSources[$id]);
         return $this->dataSources[$id];
     }
 
@@ -41,6 +67,17 @@ class W1Client
         return $this->dataSources[$id];
     }
 
+    public function setAutoDiscoveryCallback(callable $callback = null) {
+        $this->autoDiscoveryCallback = $callback;
+        if ($callback === null) {
+            $this->autoDiscovery = false;
+        } else {
+            $this->autoDiscovery = true;
+        }
+
+        return $this;
+    }
+
     public function init() {
         $this->socket = stream_socket_client($this->socketName);
     }
@@ -49,36 +86,13 @@ class W1Client
         return is_resource($this->socket);
     }
 
-    /**
-     * Builds request document
-     * @return \SimpleXMLElement request XML document
-     */
-    protected function buildRequest() {
-        $request = simplexml_load_string('<Request/>');
-        return $request;
-    }
-
-    /**
-     * Interprets reply document
-     * @param string $reply
-     */
-    protected function analyzeReply($reply) {
-        $simpleReply = simplexml_load_string($reply);
-
-        /** @var \SimpleXMLElement $child */
-        foreach ($simpleReply->children() as $child) {
-            $id = $child->id;
-
-        }
-    }
-
     public function update() {
-        fwrite($this->socket, $this->buildRequest()->asXML());
+        fwrite($this->socket, $this->transport->getQuery());
         $data = '';
         while (!feof($this->socket)) {
             $data.= fread($this->socket, 1024);
         }
 
-        $this->analyzeReply($data);
+        $this->transport->parseReply($data);
     }
 }

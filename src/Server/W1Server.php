@@ -4,6 +4,9 @@ namespace OneWire\Server;
 
 use OneWire\DataSource\W1DataSource;
 use OneWire\Exception\DataSourceException;
+use OneWire\Exception\OneWireServerException;
+use OneWire\ServerTransport\ServerTransportInterface;
+use OneWire\ServerTransport\W1ServerTransport;
 use Psr\Log\LogLevel;
 
 /**
@@ -29,10 +32,9 @@ class W1Server extends Server
      */
     protected $dataSourceStreams;
 
-    /**
-     * @var array $dataSourceReadings
-     */
-    protected $dataSourceReadings;
+
+    protected $queriedIds;
+    protected $provideDiscovered=false;
 
     /**
      * @var int
@@ -45,6 +47,11 @@ class W1Server extends Server
     protected $lastDiscoveryTime;
 
     /**
+     * @var W1ServerTransport
+     */
+    protected $transport;
+
+    /**
      * @var bool
      */
     protected $allCollected=false;
@@ -54,15 +61,21 @@ class W1Server extends Server
      */
     protected $peerTimeout=1;
 
+    public function setTransport(ServerTransportInterface $transport) {
+        $this->transport = $transport;
+    }
+
     public function init() {
         parent::init();
         $this->devicesDiscovery();
     }
 
     protected function devicesDiscovery() {
-        $dir = new \DirectoryIterator('/sys/devices/w1_bus_master1');
+        if (!$this->transport instanceof W1ServerTransport) {
+            throw new OneWireServerException('Transport not set!');
+        }
 
-        $this->dataSources = array();
+        $dir = new \DirectoryIterator('/sys/devices/w1_bus_master1');
 
         /* reset streams in case there were some unfinished queries */
         $this->dataSourceStreams = array();
@@ -77,7 +90,11 @@ class W1Server extends Server
                     continue;
                 }
 
-                $this->dataSources[$fileInfo->getFilename()] = new W1DataSource($dataSourcePath);
+                if (false === isset($this->dataSources[$fileInfo->getFilename()])) {
+                    $this->dataSources[$fileInfo->getFilename()] = $ds = new W1DataSource($dataSourcePath);
+                    $this->responder->addDataSource($ds);
+                }
+
             } catch (DataSourceException $e) {
                 $this->logger->log(LogLevel::WARNING, 'Device discovery failed for ' . $fileInfo->getPathname() );
             }
@@ -114,13 +131,10 @@ class W1Server extends Server
     protected function readReadings($streams) {
         foreach ($streams as $key => $stream) {
             $dataSource = $this->dataSources[$key];
-            $reading = $dataSource
-                ->update()
-                ->getValue();
+            $dataSource
+                ->update();
 
-            $this->logger->info('Got answer', array($key));
-
-            $this->dataSourceReadings[$key] = $reading;
+            $this->logger->info('Got answer from ' . $key, array());
 
             if (false === is_resource($stream)) {
                 unset($this->dataSourceStreams[$key]);
@@ -130,32 +144,6 @@ class W1Server extends Server
                 }
             }
 
-        }
-    }
-
-    public function getReadingsResponse ($dataSources, \SimpleXMLElement $response) {
-
-        foreach ($dataSources as $dataSource) {
-            $dataSourceId = (string) $dataSource;
-            $dataSourceResp = $response->addChild('DataSource');
-            $dataSourceResp->addAttribute('id', $dataSourceId);
-
-            if (false == isset($this->dataSources[$dataSourceId])) {
-                $errorResp = $dataSourceResp->addChild('error', 'dataSource not found');
-                $errorResp->addAttribute('code', 1);
-                $errorResp->addAttribute('id', $dataSourceId);
-                continue;
-            }
-
-            if (false == isset($this->dataSourceReadings[$dataSourceId])) {
-                $errorResp = $dataSourceResp->addChild('error', 'dataSource reading not yet available or unavailable');
-                $errorResp->addAttribute('code', 2);
-                $errorResp->addAttribute('id', $dataSourceId);
-                continue;
-            }
-
-            $readingResp = $dataSourceResp->addChild('Reading', $this->dataSourceReadings[$dataSourceId]['value']);
-            $readingResp->addAttribute('stamp', $this->dataSourceReadings[$dataSourceId]['stamp']);
         }
     }
 
@@ -189,26 +177,23 @@ class W1Server extends Server
             try {
 
                 $connection = stream_socket_accept($this->socket, $this->peerTimeout, $peerName = '');
-                $this->logger->log(LogLevel::INFO, 'Incoming connection from peer ' . $peerName);
+                $this->logger->debug('Accepted connection from peer ' . $peerName);
 
                 $dataQueryString = fread($connection, 2048);
 
-                echo $dataQueryString;
-                $dataQuery = simplexml_load_string($dataQueryString);
-                $response = new \SimpleXMLElement('<Response/>');
+                $this->transport
+                    ->setDataSources($this->dataSources)
+                    ->parse($dataQueryString);
 
-                if (count($dataQuery->dataSources) > 0) {
-                    $this->getReadingsResponse($dataQuery->dataSources, $response);
-                } else {
-                    $this->getReadingsResponse(array_keys($this->dataSources), $response);
-                }
-
-                fwrite($connection, $response->asXML());
+                fwrite($connection, $this->transport->getResponse());
                 fclose($connection);
+
+                $this->logger->debug('Response sent');
+
             } catch (\Exception $e) {
                 if (isset($connection) && is_resource($connection)) {
                     // low level error response here
-                    fwrite($connection, "<?xml version=\"1.0\"?>\n<Response><Error code=\"0\">" . $e->getMessage() . "</Error></Response>");
+                    fwrite($connection, $this->transport->getErrorResponse($e->getMessage()));
                 }
                 $this->logger->log(LogLevel::ERROR, 'Peer error: ' . $e->getMessage());
             }
