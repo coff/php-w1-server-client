@@ -11,7 +11,8 @@
     ],
     "autoload": {
         "psr-4": {
-            "OneWire\\": "src/"
+            "OneWire\\": "src/",
+            "OneWire\\Examples\\": "examples/"
         }
     },
     "require": {
