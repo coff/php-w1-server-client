@@ -13,6 +13,7 @@ abstract class Server implements ServerInterface, LoggerAwareInterface
     protected $sleepTime=100000;
     protected $socket;
     protected $socketName;
+    protected $connections;
 
     /** @var  LoggerInterface $logger */
     protected $logger;

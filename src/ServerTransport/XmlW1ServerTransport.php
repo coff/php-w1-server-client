@@ -20,6 +20,7 @@ class XmlW1ServerTransport extends W1ServerTransport
 
     public function parseRequest($request) {
 
+        echo $request.PHP_EOL;
         $request = simplexml_load_string($request);
 
         if (false === $request) {
@@ -36,11 +37,11 @@ class XmlW1ServerTransport extends W1ServerTransport
 
         /** @var \SimpleXMLElement $dataSource */
         foreach ($request->DataSource as $dataSource) {
-            $this->queriedIds[(string)$dataSource->id] = $dataSource->id;
+            $this->queriedIds[(string)$dataSource->attributes()->id] = (string)$dataSource->attributes()->id;
         }
 
         if (!$this->queriedIds) {
-            $this->queriedIds = array_keys($this->dataSources);
+            $this->queriedIds = array_keys($this->server->getDataSources());
             $this->isGlobalQuery = true;
         }
     }
@@ -52,20 +53,19 @@ class XmlW1ServerTransport extends W1ServerTransport
             $dataSourceResp = $response->addChild('DataSource');
             $dataSourceResp->addAttribute('id', $dataSourceId);
 
-            if (false === isset($this->dataSources[$dataSourceId]) && false === $this->isGlobalQuery) {
+
+            if (false === $this->server->getDataSourceById($dataSourceId) && false === $this->isGlobalQuery) {
                 $errorResp = $dataSourceResp->addChild('Error', 'dataSource not found');
                 $errorResp->addAttribute('code', 1);
-                $errorResp->addAttribute('id', $dataSourceId);
                 continue;
             }
 
-            $dataSource = $this->dataSources[$dataSourceId];
+            $dataSource = $this->server->getDataSourceById($dataSourceId);
 
             if (true === $dataSource->isErrorState()) {
                 $e = $dataSource->getException();
                 $errorResp = $dataSourceResp->addChild('Error', $e->getMessage());
                 $errorResp->addAttribute('code', $e->getCode() );
-                $errorResp->addAttribute('id', $dataSourceId);
                 continue;
 
             }
@@ -73,6 +73,8 @@ class XmlW1ServerTransport extends W1ServerTransport
             $readingResp = $dataSourceResp->addChild('Reading', $dataSource->getValue());
             $readingResp->addAttribute('stamp', $dataSource->getStamp());
         }
+
+        return $response->asXML();
     }
 
     public function getErrorResponse($errorMessage, $code=0)

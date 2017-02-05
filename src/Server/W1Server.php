@@ -3,6 +3,7 @@
 namespace OneWire\Server;
 
 use OneWire\DataSource\W1DataSource;
+use OneWire\DataSource\W1FileDataSource;
 use OneWire\Exception\DataSourceException;
 use OneWire\Exception\OneWireServerException;
 use OneWire\ServerTransport\ServerTransportInterface;
@@ -70,6 +71,14 @@ class W1Server extends Server
         $this->devicesDiscovery();
     }
 
+    public function getDataSources() {
+        return $this->dataSources;
+    }
+
+    public function getDataSourceById($id) {
+        return isset($this->dataSources[$id]) ? $this->dataSources[$id] : false;
+    }
+
     protected function devicesDiscovery() {
         if (!$this->transport instanceof W1ServerTransport) {
             throw new OneWireServerException('Transport not set!');
@@ -91,8 +100,7 @@ class W1Server extends Server
                 }
 
                 if (false === isset($this->dataSources[$fileInfo->getFilename()])) {
-                    $this->dataSources[$fileInfo->getFilename()] = $ds = new W1DataSource($dataSourcePath);
-                    $this->responder->addDataSource($ds);
+                    $this->dataSources[$fileInfo->getFilename()] = $ds = new W1FileDataSource($dataSourcePath);
                 }
 
             } catch (DataSourceException $e) {
@@ -174,28 +182,40 @@ class W1Server extends Server
          * Or any incoming client connection?
          */
         if (0 < stream_select($sockets = array($this->socket), $w=null, $o=null, 0, $this->sleepTime)) {
-            try {
+            $this->connections[] = $connection = stream_socket_accept($this->socket, $this->peerTimeout, $peerName = '');
+            stream_set_blocking($connection, false);
+            $this->logger->debug('Accepted connection from peer ');
+        }
 
-                $connection = stream_socket_accept($this->socket, $this->peerTimeout, $peerName = '');
-                $this->logger->debug('Accepted connection from peer ' . $peerName);
+        if ($this->connections && 0 < stream_select($connections = $this->connections, $w=null, $o=null, 0, $this->sleepTime)) {
+            foreach ($connections as $key => $connection) {
+                try {
+                    $this->logger->debug('Got request from peer ' . $key);
 
-                $dataQueryString = fread($connection, 2048);
+                    $dataString = '';
+                    while ($data = fread($connection, 2048)) {
+                        $dataString.= $data;
+                    }
 
-                $this->transport
-                    ->setDataSources($this->dataSources)
-                    ->parse($dataQueryString);
+                    if ($dataString == '')
+                        continue;
 
-                fwrite($connection, $this->transport->getResponse());
-                fclose($connection);
+                    $this->transport
+                        ->setServer($this)
+                        ->parseRequest($dataString);
 
-                $this->logger->debug('Response sent');
+                    fwrite($connection, $this->transport->getResponse());
 
-            } catch (\Exception $e) {
-                if (isset($connection) && is_resource($connection)) {
-                    // low level error response here
-                    fwrite($connection, $this->transport->getErrorResponse($e->getMessage()));
+                    $this->logger->debug('Response sent');
+
+                } catch (\Exception $e) {
+                    if (isset($connection) && is_resource($connection)) {
+                        // low level error response here
+                        fwrite($connection, $this->transport->getErrorResponse($e->getMessage()));
+                        fclose($connection); unset($this->connections[$key]);
+                    }
+                    $this->logger->log(LogLevel::ERROR, 'Peer error: ' . $e->getMessage());
                 }
-                $this->logger->log(LogLevel::ERROR, 'Peer error: ' . $e->getMessage());
             }
         }
 

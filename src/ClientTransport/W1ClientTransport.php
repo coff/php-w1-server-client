@@ -3,23 +3,37 @@
 namespace OneWire\ClientTransport;
 
 
+use OneWire\Client\W1Client;
 use OneWire\DataSource\DataSource;
 use OneWire\DataSource\W1ServerDataSource;
 
 abstract class W1ClientTransport implements ClientTransportInterface
 {
-    protected $autoDiscovery;
-
-    /** @var  DataSource[] */
-    protected $dataSources;
+    /**
+     * @var W1Client
+     */
+    protected $client;
 
     /**
-     * Sets auto-discovery mode
-     * @param bool $state
+     * Callback to call when new DataSource showed up in server response
+     *
+     * @var callable
+     */
+    protected $autoDiscoveryCallback;
+
+    /**
+     * Sets auto-discovery callback method
+     * @param callable|null $callback
      * @return $this
      */
-    public function setAutoDiscovery($state) {
-        $this->autoDiscovery = $state;
+    public function setAutoDiscoveryCallback(callable $callback = null) {
+        $this->autoDiscoveryCallback = $callback;
+
+        return $this;
+    }
+
+    public function setClient(W1Client $client) {
+        $this->client = $client;
 
         return $this;
     }

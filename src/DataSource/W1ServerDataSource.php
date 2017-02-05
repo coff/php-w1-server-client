@@ -30,12 +30,6 @@ class W1ServerDataSource extends W1DataSource
         return $this;
     }
 
-    public function setValue($value) {
-        $this->value;
-
-        return $this;
-    }
-
     public function update() {
         $this->client->update();
     }

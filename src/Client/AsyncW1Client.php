@@ -3,19 +3,17 @@
 namespace OneWire\Client;
 
 use OneWire\Exception\OneWireException;
-use Psr\Log\LoggerAwareTrait;
 
 class AsyncW1Client extends W1Client
 {
-    use LoggerAwareTrait;
 
     const
-        STATE_OFFLINE = 0,
-        STATE_IDLE = 1,
-        STATE_CONN = 1,
-        STATE_REPLY_AWAIT = 2,
-        STATE_REPLY_TIMEOUT = 3,
-        STATE_CONN_TIMEOUT = 4;
+        STATE_OFFLINE = 'offline',
+        STATE_IDLE = 'idle',
+        STATE_CONN = 'idle',
+        STATE_REPLY_AWAIT = 'await',
+        STATE_REPLY_TIMEOUT = 'reply timeout',
+        STATE_CONN_TIMEOUT = 'connection timeout';
 
     protected $state;
 
@@ -43,15 +41,19 @@ class AsyncW1Client extends W1Client
         $this->state = self::STATE_OFFLINE;
     }
 
+    protected function setState($state) {
+        $this->state = $state;
+        $this->logger->debug('In state ' . $this->state );
+    }
+
     public function init()
     {
         parent::init();
 
-        if ($this->isConnected()) {
-            $this->logger->info('Connected successfully to socket',
-                array('socket'=>$this->socketName));
+        stream_set_blocking($this->socket, false);
 
-            $this->state = self::STATE_CONN;
+        if ($this->isConnected()) {
+            $this->setState(self::STATE_CONN);
             $this->failedConnAttm = 0;
         } else {
             $this->logger->error('Failed connecting to socket',
@@ -66,14 +68,19 @@ class AsyncW1Client extends W1Client
         $this->lastRequestTimestamp=time();
 
         if (false === $this->isConnected()) {
-            $this->state = self::STATE_CONN_TIMEOUT;
+            $this->setState(self::STATE_CONN_TIMEOUT);
             $this->logger->warning('Connection timeout', array());
             return false;
         }
 
-        fwrite($this->socket, $this->transport->getQuery());
+        fwrite($this->socket,
+            $this->transport
+                ->setClient($this)
+                ->getQuery());
 
-        $this->state = self::STATE_REPLY_AWAIT;
+        $this->logger->debug('Request sent');
+
+        $this->setState(self::STATE_REPLY_AWAIT);
         return true;
     }
 
@@ -81,11 +88,11 @@ class AsyncW1Client extends W1Client
 
         $gotReply = stream_select($a = array($this->socket), $w=null, $o=null, 0, $this->awaitSocket);
 
-        if (false === $gotReply) {
+        if (0 === $gotReply) {
 
             if (time()-$this->lastRequestTimestamp > $this->awaitTimeout) {
                 $this->logger->warning('Reply timeouted',array());
-                $this->state = self::STATE_REPLY_TIMEOUT;
+                $this->setState(self::STATE_REPLY_TIMEOUT);
             }
 
             return false;
@@ -93,12 +100,13 @@ class AsyncW1Client extends W1Client
 
         $this->failedRequests = 0;
 
-        $data = '';
-        while (!feof($this->socket)) {
-            $data.= fread($this->socket, 1024);
+        $dataString = '';
+        while ($data = fread($this->socket, 2048)) {
+            $dataString.= $data;
         }
 
-        $this->transport->parseReply($data);
+        $this->transport->parseReply($dataString);
+        $this->setState(self::STATE_IDLE);
 
         return true;
     }
@@ -115,8 +123,8 @@ class AsyncW1Client extends W1Client
             case self::STATE_IDLE:
                 if (time()-$this->lastRequestTimestamp > $this->minRequestDelay) {
                     $this->request();
+                    $this->awaitReply();
                 }
-                $this->awaitReply();
                 break;
 
             case self::STATE_REPLY_AWAIT:
@@ -126,7 +134,7 @@ class AsyncW1Client extends W1Client
             case self::STATE_REPLY_TIMEOUT:
                 if ($this->failedRequests > $this->maxFailedRequests) {
                     fclose($this->socket);
-                    $this->state = self::STATE_CONN_TIMEOUT;
+                    $this->setState(self::STATE_CONN_TIMEOUT);
                 }
                 $this->failedRequests++;
                 $this->request();
