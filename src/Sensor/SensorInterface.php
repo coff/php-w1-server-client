@@ -4,17 +4,21 @@ namespace OneWire\Sensor;
 
 interface SensorInterface
 {
-    /**
-     * Renders values in proper units with measuring suffix.
-     * @return $this
-     */
-    public function render();
-
     public function getMeasureUnit();
-
-    public function getMeasureSuffix();
 
     public function setDescription($description);
 
     public function getDescription();
+
+    /**
+     * Updates sensor from DataSource
+     * @return $this
+     */
+    public function update();
+
+    /**
+     * Returns sensor measure
+     * @return double
+     */
+    public function getValue();
 }

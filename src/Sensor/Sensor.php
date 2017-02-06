@@ -8,19 +8,16 @@ use OneWire\DataSource\DataSource;
 abstract class Sensor implements SensorInterface
 {
     protected $measureUnit;
+
     protected $dataSource;
 
-    protected $measureSuffix;
     protected $description;
+
+    protected $value;
 
     public function getMeasureUnit()
     {
         return $this->measureUnit;
-    }
-
-    public function getMeasureSuffix()
-    {
-        return $this->measureSuffix;
     }
 
     public function setDescription($description)
@@ -43,5 +40,10 @@ abstract class Sensor implements SensorInterface
 
     public function getDataSource() {
         return $this->dataSource;
+    }
+
+    public function getValue()
+    {
+        return $this->value;
     }
 }

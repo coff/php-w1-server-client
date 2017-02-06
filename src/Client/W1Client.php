@@ -95,7 +95,7 @@ class W1Client
             return false;
         }
 
-        if ($res instanceof W1DataSource) {
+        if ($res instanceof W1ServerDataSource) {
             $this->dataSources[$res->getId()] = $res;
             return $res;
         }

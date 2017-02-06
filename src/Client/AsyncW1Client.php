@@ -91,7 +91,7 @@ class AsyncW1Client extends W1Client
         if (0 === $gotReply) {
 
             if (time()-$this->lastRequestTimestamp > $this->awaitTimeout) {
-                $this->logger->warning('Reply timeouted',array());
+                $this->logger->warning('Reply timeouted', array());
                 $this->setState(self::STATE_REPLY_TIMEOUT);
             }
 
@@ -104,7 +104,6 @@ class AsyncW1Client extends W1Client
         while ($data = fread($this->socket, 2048)) {
             $dataString.= $data;
         }
-
         $this->transport->parseReply($dataString);
         $this->setState(self::STATE_IDLE);
 

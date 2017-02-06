@@ -7,11 +7,6 @@ use OneWire\DataSource\DataSource;
 
 class DS18B20Sensor extends W1Sensor
 {
-    const
-        UNIT_CELSIUS    = 1,
-        UNIT_FAHRENHEIT = 2,
-        UNIT_KELVIN     = 3;
-
 
     /** @var  DataSource */
     protected $dataSource;
@@ -21,19 +16,15 @@ class DS18B20Sensor extends W1Sensor
      * TemperatureSensor constructor.
      *
      * @param DataSource $dataSource
-     * @param int $measureUnit units to display temperature in
-     * @param string $measureSuffix
-     * @internal param null $device
+     * @param string $measureUnit
      */
-    public function __construct(DataSource $dataSource, $measureUnit=null, $measureSuffix='°C') {
-        $this->measureUnit = $measureUnit;
-        $this->measureSuffix = $measureSuffix;
+    public function __construct(DataSource $dataSource, $measureUnit = 'celsius') {
         $this->dataSource = $dataSource;
+        $this->measureUnit = $measureUnit;
     }
 
     protected function parseReading($reading) {
-
-        $lines = explode("\n",$reading);
+        $lines = explode("\n", $reading);
         $crcLine = trim($lines[0]);
         $valueLine = trim($lines[1]);
         if (substr($crcLine,-1) == 'S') { // YE(S)
@@ -42,11 +33,8 @@ class DS18B20Sensor extends W1Sensor
     }
 
     public function update() {
-        $this->parseReading($this->dataSource->getValue());
-    }
+        $this->parseReading($this->dataSource->update()->getValue());
 
-    public function render() {
-        $t = new TemperatureConversion($this->getValue(), new TemperatureUnit(TemperatureUnit::CELSIUS));
-        return (string)round($t->to($this->measureUnit),1) . $this->getMeasureSuffix();
+        return $this;
     }
 }

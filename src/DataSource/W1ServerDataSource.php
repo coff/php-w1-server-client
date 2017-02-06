@@ -31,6 +31,10 @@ class W1ServerDataSource extends W1DataSource
     }
 
     public function update() {
-        $this->client->update();
+        if ($this->errorState) {
+            throw $this->exception;
+        }
+
+        return $this;
     }
 }

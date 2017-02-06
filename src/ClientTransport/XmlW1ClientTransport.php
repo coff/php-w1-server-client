@@ -38,15 +38,13 @@ class XmlW1ClientTransport extends W1ClientTransport
             if (false === $dataSource) {
                 continue;
             }
-
-            if ($dataSourceEntity->Error !== null) {
+            if (isset($dataSourceEntity->Error)) {
                 $dataSource->setErrorState(
                     new DataSourceException((string)$dataSourceEntity->Error,
                         (int)$dataSourceEntity->attributes()->code));
                 continue;
             }
-
-            if ($dataSourceEntity->Reading !== null) {
+            if (isset($dataSourceEntity->Reading)) {
                 $dataSource
                     ->setValue((string)$dataSourceEntity->Reading)
                     ->setStamp((int)$dataSourceEntity->attributes()->stamp);
