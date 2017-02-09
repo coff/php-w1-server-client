@@ -1,5 +1,5 @@
 <?php
-namespace OneWire\ClientTransport;
+namespace Coff\OneWire\ClientTransport;
 
 interface ClientTransportInterface
 {

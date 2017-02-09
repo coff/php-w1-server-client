@@ -1,9 +1,8 @@
 <?php
 
-namespace OneWire\Sensor;
+namespace Coff\OneWire\Sensor;
 
-use OneWire\DataSource\AsyncDataSource;
-use OneWire\DataSource\DataSource;
+use Coff\DataSource\DataSource;
 
 class DS18B20Sensor extends W1Sensor
 {

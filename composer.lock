@@ -4,9 +4,45 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "bfdcf00b8cfe9853a19946e861e17aa9",
-    "content-hash": "d27a61c570276dfe6fdde1834b20e64a",
+    "hash": "86e134675144dfdde4106970d0488209",
+    "content-hash": "80fa895bd1809882be6b95348a7bedaf",
     "packages": [
+        {
+            "name": "coff/php-api-datasource",
+            "version": "v0.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/coff/php-api-datasource.git",
+                "reference": "fafcbf205effadc7daf057ee5771b246c99c6f28"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/coff/php-api-datasource/zipball/fafcbf205effadc7daf057ee5771b246c99c6f28",
+                "reference": "fafcbf205effadc7daf057ee5771b246c99c6f28",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Coff\\DataSource\\": "."
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Krzysztof Kubanek",
+                    "email": "krzysztof.kubanek@gmail.com"
+                }
+            ],
+            "description": "API package for DataSource class",
+            "support": {
+                "source": "https://github.com/coff/php-api-datasource/tree/v0.0.2",
+                "issues": "https://github.com/coff/php-api-datasource/issues"
+            },
+            "time": "2017-02-09 16:56:09"
+        },
         {
             "name": "garoevans/php-enum",
             "version": "1.2.0",

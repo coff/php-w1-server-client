@@ -1,13 +1,13 @@
 <?php
 
-namespace OneWire\Server;
+namespace Coff\OneWire\Server;
 
-use OneWire\DataSource\W1DataSource;
-use OneWire\DataSource\W1FileDataSource;
-use OneWire\Exception\DataSourceException;
-use OneWire\Exception\OneWireServerException;
-use OneWire\ServerTransport\ServerTransportInterface;
-use OneWire\ServerTransport\W1ServerTransport;
+use Coff\DataSource\Exception\DataSourceException;
+use Coff\OneWire\DataSource\W1DataSource;
+use Coff\OneWire\DataSource\W1FileDataSource;
+use Coff\OneWire\Exception\OneWireServerException;
+use Coff\OneWire\ServerTransport\ServerTransportInterface;
+use Coff\OneWire\ServerTransport\W1ServerTransport;
 use Psr\Log\LogLevel;
 
 /**
@@ -155,6 +155,61 @@ class W1Server extends Server
         }
     }
 
+    public function handleConnections() {
+        $result = stream_select($connections = $this->connections, $w=null, $o=null, 0, $this->sleepTime);
+
+        if (false === $result) {
+            return false;
+        }
+
+        /* none of connected peers has sent us data */
+        if (0 == $result) {
+            return null;
+        }
+
+        foreach ($connections as $key => $connection) {
+            try {
+
+                /* peer has closed connection */
+                if (true === feof($connection)) {
+                    $this->logger->debug('Peer has closed connection ' . $key);
+                    fclose($connection);
+                    unset($this->connections[$key]);
+                    continue;
+                }
+
+                $this->logger->debug('Got request from peer ' . $key);
+
+                $dataString = '';
+                while ($data = fread($connection, 2048)) {
+                    $dataString.= $data;
+                }
+
+                /* just in case */
+                if ($dataString == '')
+                    continue;
+
+                $this->lastConnActive[$key] = time();
+
+                $this->transport
+                    ->setServer($this)
+                    ->parseRequest($dataString);
+
+                fwrite($connection, $this->transport->getResponse());
+
+                $this->logger->debug('Response sent');
+
+            } catch (\Exception $e) {
+                if (isset($connection) && is_resource($connection)) {
+                    // low level error response here
+                    fwrite($connection, $this->transport->getErrorResponse($e->getMessage()));
+                    $this->closeConnection($key);
+                }
+                $this->logger->log(LogLevel::ERROR, 'Peer error: ' . $e->getMessage());
+            }
+        }
+    }
+
     public function each() {
 
         /**
@@ -163,7 +218,7 @@ class W1Server extends Server
         if ($this->lastDiscoveryTime < time()-self::DISCOVERY_TIMEOUT && true === $this->allCollected) {
             $this->devicesDiscovery(); // performs discovery
         }
-        echo '.';
+
         /**
          * Query dataSources' readings each self::READING_OUTDATED_MIN
          */
@@ -187,37 +242,29 @@ class W1Server extends Server
             $this->logger->debug('Accepted connection from peer ');
         }
 
-        if ($this->connections && 0 < stream_select($connections = $this->connections, $w=null, $o=null, 0, $this->sleepTime)) {
-            foreach ($connections as $key => $connection) {
-                try {
-                    $this->logger->debug('Got request from peer ' . $key);
-
-                    $dataString = '';
-                    while ($data = fread($connection, 2048)) {
-                        $dataString.= $data;
-                    }
-
-                    if ($dataString == '')
-                        continue;
-
-                    $this->transport
-                        ->setServer($this)
-                        ->parseRequest($dataString);
-
-                    fwrite($connection, $this->transport->getResponse());
-
-                    $this->logger->debug('Response sent');
-
-                } catch (\Exception $e) {
-                    if (isset($connection) && is_resource($connection)) {
-                        // low level error response here
-                        fwrite($connection, $this->transport->getErrorResponse($e->getMessage()));
-                        fclose($connection); unset($this->connections[$key]);
-                    }
-                    $this->logger->log(LogLevel::ERROR, 'Peer error: ' . $e->getMessage());
-                }
-            }
+        /*
+         * Having connections? Check if some client asks for something
+         */
+        if ($this->connections) {
+            $this->handleConnections();
         }
+    }
 
+    public function terminateDeadConnections() {
+        foreach ($this->connections as $index => $connection) {
+
+            if (time()-$this->lastConnActive[$index] < $this->connInactivityTimeout) {
+                continue;
+            }
+
+            $this->logger->debug('Closing connection ' . $index);
+            fclose($connection);
+            unset($this->connections[$index]);
+        }
+    }
+
+    public function everyMinute()
+    {
+        $this->terminateDeadConnections();
     }
 }

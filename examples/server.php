@@ -3,8 +3,8 @@
 
 namespace OneWire\Examples;
 
-use OneWire\Server\W1Server;
-use OneWire\ServerTransport\XmlW1ServerTransport;
+use Coff\OneWire\Server\W1Server;
+use Coff\OneWire\ServerTransport\XmlW1ServerTransport;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\ConsoleOutput;

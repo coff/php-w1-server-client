@@ -1,11 +1,10 @@
 <?php
 
-namespace OneWire\ClientTransport;
+namespace Coff\OneWire\ClientTransport;
 
 
-use OneWire\Client\W1Client;
-use OneWire\DataSource\DataSource;
-use OneWire\DataSource\W1ServerDataSource;
+use Coff\OneWire\Client\W1Client;
+use Coff\OneWire\DataSource\W1ServerDataSource;
 
 abstract class W1ClientTransport implements ClientTransportInterface
 {

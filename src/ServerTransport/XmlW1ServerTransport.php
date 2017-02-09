@@ -1,8 +1,8 @@
 <?php
 
-namespace OneWire\ServerTransport;
+namespace Coff\OneWire\ServerTransport;
 
-use OneWire\Exception\TransportException;
+use Coff\OneWire\Exception\TransportException;
 
 class XmlW1ServerTransport extends W1ServerTransport
 {
@@ -20,7 +20,6 @@ class XmlW1ServerTransport extends W1ServerTransport
 
     public function parseRequest($request) {
 
-        echo $request.PHP_EOL;
         $request = simplexml_load_string($request);
 
         if (false === $request) {

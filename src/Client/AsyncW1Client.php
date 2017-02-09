@@ -1,8 +1,8 @@
 <?php
 
-namespace OneWire\Client;
+namespace Coff\OneWire\Client;
 
-use OneWire\Exception\OneWireException;
+use Coff\OneWire\Exception\OneWireException;
 
 class AsyncW1Client extends W1Client
 {

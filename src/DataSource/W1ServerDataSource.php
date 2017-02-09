@@ -1,8 +1,8 @@
 <?php
 
-namespace OneWire\DataSource;
+namespace Coff\OneWire\DataSource;
 
-use OneWire\Client\W1Client;
+use Coff\OneWire\Client\W1Client;
 
 class W1ServerDataSource extends W1DataSource
 {

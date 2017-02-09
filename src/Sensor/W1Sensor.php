@@ -1,6 +1,6 @@
 <?php
 
-namespace OneWire\Sensor;
+namespace Coff\OneWire\Sensor;
 
 abstract class W1Sensor extends Sensor
 {

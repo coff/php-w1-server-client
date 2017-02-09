@@ -1,6 +1,6 @@
 <?php
 
-namespace OneWire\DataSource;
+namespace Coff\OneWire\DataSource;
 
 class W1FileDataSource extends W1DataSource {
 

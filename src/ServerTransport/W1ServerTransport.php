@@ -1,9 +1,9 @@
 <?php
 
-namespace OneWire\ServerTransport;
+namespace Coff\OneWire\ServerTransport;
 
-use OneWire\DataSource\W1DataSource;
-use OneWire\Server\W1Server;
+use Coff\OneWire\DataSource\W1DataSource;
+use Coff\OneWire\Server\W1Server;
 
 abstract class W1ServerTransport implements ServerTransportInterface
 {

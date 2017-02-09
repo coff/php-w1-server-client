@@ -1,8 +1,8 @@
 <?php
 
-namespace OneWire\DataSource;
+namespace Coff\OneWire\DataSource;
 
-use OneWire\Exception\DataSourceException;
+use Coff\DataSource\AsyncDataSource;
 
 abstract class W1DataSource extends AsyncDataSource
 {

@@ -1,10 +1,9 @@
 <?php
 
-namespace OneWire\ClientTransport;
+namespace Coff\OneWire\ClientTransport;
 
-use OneWire\DataSource\W1ServerDataSource;
-use OneWire\Exception\DataSourceException;
-use OneWire\Exception\TransportException;
+use Coff\OneWire\DataSource\W1ServerDataSource;
+use Coff\OneWire\Exception\TransportException;
 
 class XmlW1ClientTransport extends W1ClientTransport
 {

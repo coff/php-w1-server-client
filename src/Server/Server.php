@@ -1,8 +1,8 @@
 <?php
 
-namespace OneWire\Server;
+namespace Coff\OneWire\Server;
 
-use OneWire\Exception\ServerException;
+use Coff\OneWire\Exception\OneWireServerException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
@@ -13,7 +13,14 @@ abstract class Server implements ServerInterface, LoggerAwareInterface
     protected $sleepTime=100000;
     protected $socket;
     protected $socketName;
-    protected $connections;
+    protected $peerTimeout=60;
+
+    protected $lastEveryMinute, $lastEveryNight, $lastEveryHour;
+
+    /* active peer connections */
+    protected $connections = array();
+    protected $lastConnActive = array();
+    protected $connInactivityTimeout=60;
 
     /** @var  LoggerInterface $logger */
     protected $logger;
@@ -29,7 +36,7 @@ abstract class Server implements ServerInterface, LoggerAwareInterface
 
         if (false === $this->socket) {
             $this->logger->log(LogLevel::CRITICAL, $msg = 'Failed to open socket ' . $this->socketName);
-            throw new ServerException($msg);
+            throw new OneWireServerException($msg);
         }
 
     }
@@ -48,13 +55,62 @@ abstract class Server implements ServerInterface, LoggerAwareInterface
         return $this;
     }
 
+    public function setPeerTimeout($secs=60) {
+        $this->peerTimeout = $secs;
+    }
+
+    public function getConnections() {
+        return $this->connections;
+    }
+
+    public function closeConnection($id) {
+
+        if (false === isset($this->connections[$id])) {
+            return $this;
+        }
+
+        if (true === is_resource($this->connections[$id])) {
+            fclose($this->connections[$id]);
+        }
+
+        unset($this->connections[$id]);
+        unset($this->lastConnActive[$id]);
+
+        return $this;
+    }
+
     public function loop() {
         if (!$this->socket) {
-            throw new ServerException('There is no socket open for our server instance!');
+            throw new OneWireServerException('There is no socket open for our server instance!');
         }
 
         while(true) {
             $this->each();
+
+            /* cyclic maintenance tasks */
+            list($night, $hour, $minute) = explode(",", date("j,G,i")); /* day, hour, minute */
+
+            if ($night != $this->lastEveryNight) {
+                $this->lastEveryNight = $night;
+
+                $this->logger->info('Launching overnight maintenance tasks');
+                $this->everyNight();
+            }
+
+            if ($hour != $this->lastEveryHour) {
+                $this->lastEveryHour = $hour;
+
+                $this->logger->info('Launching hourly maintenance tasks');
+                $this->everyHour();
+            }
+
+            if ($minute != $this->lastEveryMinute) {
+                $this->lastEveryMinute = $minute;
+
+                $this->logger->info('Launching once-a-minute maintenance tasks');
+                $this->everyMinute();
+            }
+
             usleep($this->sleepTime);
         }
 
@@ -63,5 +119,13 @@ abstract class Server implements ServerInterface, LoggerAwareInterface
         return $this;
     }
 
+    public function everyMinute() {
+    }
+
+    public function everyHour() {
+    }
+
+    public function everyNight() {
+    }
 
 }

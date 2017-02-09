@@ -1,5 +1,5 @@
 {
-    "name": "coff/w1-server-client",
+    "name": "coff/php-w1-server-client",
     "description": "One-Wire (1-wire) devices server & client",
     "type": "library",
     "license": "MIT",
@@ -11,12 +11,18 @@
     ],
     "autoload": {
         "psr-4": {
-            "OneWire\\": "src/",
-            "OneWire\\Examples\\": "examples/"
+            "Coff\\OneWire\\": "src/",
+            "Coff\\OneWire\\Examples\\": "examples/"
         }
     },
+    "repositories": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/coff/php-api-datasource.git"
+        }
+    ],
     "require": {
-        "garoevans/php-enum": "^1.2",
+        "coff/php-api-datasource": "^0.0.2",
         "monolog/monolog": "^1.22",
         "symfony/console": "^3.2"
     }

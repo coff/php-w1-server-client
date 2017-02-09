@@ -1,11 +1,11 @@
 <?php
 
-namespace OneWire\ServerTransport;
+namespace Coff\OneWire\ServerTransport;
 
 /**
  * Interface ServerTransportInterface
  *
- * @package OneWire\ServerTransport
+ * @package Coff\OneWire\ServerTransport
  */
 interface ServerTransportInterface
 {

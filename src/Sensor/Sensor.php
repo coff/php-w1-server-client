@@ -1,9 +1,8 @@
 <?php
 
-namespace OneWire\Sensor;
+namespace Coff\OneWire\Sensor;
 
-
-use OneWire\DataSource\DataSource;
+use Coff\DataSource\DataSource;
 
 abstract class Sensor implements SensorInterface
 {

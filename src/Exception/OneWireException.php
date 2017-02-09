@@ -1,5 +1,5 @@
 <?php
-namespace OneWire\Exception;
+namespace Coff\OneWire\Exception;
 
 class OneWireException extends \Exception
 {

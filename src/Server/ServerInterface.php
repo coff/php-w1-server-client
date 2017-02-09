@@ -1,6 +1,6 @@
 <?php
 
-namespace OneWire\Server;
+namespace Coff\OneWire\Server;
 
 interface ServerInterface
 {

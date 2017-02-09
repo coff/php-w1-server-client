@@ -1,6 +1,6 @@
 <?php
 
-namespace OneWire\Exception;
+namespace Coff\OneWire\Exception;
 
 class OneWireServerException extends OneWireException
 {

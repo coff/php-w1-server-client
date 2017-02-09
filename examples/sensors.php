@@ -3,11 +3,11 @@
 
 namespace OneWire\Examples;
 
-use OneWire\Client\AsyncW1Client;
-use OneWire\ClientTransport\XmlW1ClientTransport;
-use OneWire\DataSource\W1ServerDataSource;
-use OneWire\Sensor\DS18B20Sensor;
-use OneWire\Sensor\Sensor;
+use Coff\OneWire\Client\AsyncW1Client;
+use Coff\OneWire\ClientTransport\XmlW1ClientTransport;
+use Coff\OneWire\DataSource\W1ServerDataSource;
+use Coff\OneWire\Sensor\DS18B20Sensor;
+use Coff\OneWire\Sensor\Sensor;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -24,8 +24,15 @@ $w1client->setAutoDiscoveryCallback(function($id) use ($logger, &$sensors) {
 
     $dataSource = new W1ServerDataSource($id);
     $sensor = new DS18B20Sensor($dataSource);
+    switch ($id) {
+        case '28-0000084a49a8': $sensor->setDescription('Source In '); break;
+        case '28-0000084b947a': $sensor->setDescription('Buffer Ret'); break;
+        case '28-00000891595f': $sensor->setDescription('Heater Pwr'); break;
+        case '28-0000088fc71c': $sensor->setDescription('Heater Ret'); break;
+        case '28-0416747d17ff': $sensor->setDescription('Source Out'); break;
+    }
+
     $sensors[] = $sensor;
-    var_dump($sensors);
     return $dataSource;
 });
 $w1client->setAutoDiscovery(true);
@@ -34,7 +41,7 @@ while (true) {
 
     /** @var Sensor $sensor */
     foreach ($sensors as $sensor) {
-        echo $sensor->update()->getValue()."\t|";
+        echo $sensor->getDescription().':'.sprintf("%.1f", $sensor->update()->getValue())."\t|";
     }
     echo "\r";
     sleep(1);

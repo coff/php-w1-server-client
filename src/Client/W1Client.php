@@ -1,11 +1,11 @@
 <?php
 
-namespace OneWire\Client;
+namespace Coff\OneWire\Client;
 
-use OneWire\ClientTransport\W1ClientTransport;
-use OneWire\DataSource\W1DataSource;
-use OneWire\DataSource\W1ServerDataSource;
-use OneWire\Exception\OneWireClientException;
+use Coff\OneWire\ClientTransport\W1ClientTransport;
+use Coff\OneWire\DataSource\W1DataSource;
+use Coff\OneWire\DataSource\W1ServerDataSource;
+use Coff\OneWire\Exception\OneWireClientException;
 use Psr\Log\LoggerAwareTrait;
 
 /**
