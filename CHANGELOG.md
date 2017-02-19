@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## dev-master
+## 0.0.3
 
 Some phpDoc added.
 `Sensor` to implement DataSource interface itself.
