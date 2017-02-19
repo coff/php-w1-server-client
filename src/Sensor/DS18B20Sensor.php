@@ -4,6 +4,11 @@ namespace Coff\OneWire\Sensor;
 
 use Coff\DataSource\DataSource;
 
+/**
+ * DS18B20Sensor
+ *
+ * A DS18B20 chip readings handling class.
+ */
 class DS18B20Sensor extends W1Sensor
 {
 
@@ -22,6 +27,16 @@ class DS18B20Sensor extends W1Sensor
         $this->measureUnit = $measureUnit;
     }
 
+    /**
+     * Sensor init.
+     *
+     * @return $this
+     */
+    public function init()
+    {
+        return $this;
+    }
+
     protected function parseReading($reading) {
         $lines = explode("\n", $reading);
         $crcLine = trim($lines[0]);
@@ -31,6 +46,11 @@ class DS18B20Sensor extends W1Sensor
         }
     }
 
+    /**
+     * Updates value reading according to DataSource data.
+     *
+     * @return $this
+     */
     public function update() {
         $this->parseReading($this->dataSource->update()->getValue());
 

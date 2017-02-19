@@ -2,6 +2,8 @@
 
 ## dev-master
 
+Some phpDoc added.
+`Sensor` to implement DataSource interface itself.
 Server connection closed check added.
 Dependency `php-api-datasource` version updated.
 

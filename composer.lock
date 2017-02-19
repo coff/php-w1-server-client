@@ -4,27 +4,27 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "86e134675144dfdde4106970d0488209",
-    "content-hash": "80fa895bd1809882be6b95348a7bedaf",
+    "hash": "b96e2923f211260fca01358303ac5df2",
+    "content-hash": "4e7c2a4c3ff80323cdcc84d9914ab7d8",
     "packages": [
         {
             "name": "coff/php-api-datasource",
-            "version": "v0.0.2",
+            "version": "v0.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/coff/php-api-datasource.git",
-                "reference": "fafcbf205effadc7daf057ee5771b246c99c6f28"
+                "reference": "337001a5f4e3b8891d37507be261514a0e632f75"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/coff/php-api-datasource/zipball/fafcbf205effadc7daf057ee5771b246c99c6f28",
-                "reference": "fafcbf205effadc7daf057ee5771b246c99c6f28",
+                "url": "https://api.github.com/repos/coff/php-api-datasource/zipball/337001a5f4e3b8891d37507be261514a0e632f75",
+                "reference": "337001a5f4e3b8891d37507be261514a0e632f75",
                 "shasum": ""
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Coff\\DataSource\\": "."
+                    "Coff\\DataSource\\": "src/"
                 }
             },
             "license": [
@@ -38,10 +38,10 @@
             ],
             "description": "API package for DataSource class",
             "support": {
-                "source": "https://github.com/coff/php-api-datasource/tree/v0.0.2",
+                "source": "https://github.com/coff/php-api-datasource/tree/v0.0.4",
                 "issues": "https://github.com/coff/php-api-datasource/issues"
             },
-            "time": "2017-02-09 16:56:09"
+            "time": "2017-02-19 23:01:04"
         },
         {
             "name": "garoevans/php-enum",

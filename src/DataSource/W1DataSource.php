@@ -3,9 +3,13 @@
 namespace Coff\OneWire\DataSource;
 
 use Coff\DataSource\AsyncDataSource;
+use Coff\DataSource\StatefulDataSourceInterface;
+use Coff\DataSource\StatefulTrait;
 
-abstract class W1DataSource extends AsyncDataSource
+abstract class W1DataSource extends AsyncDataSource implements StatefulDataSourceInterface
 {
+    use StatefulTrait;
+
     protected $id;
 
     public function getId() {

@@ -2,6 +2,8 @@
 
 namespace Coff\OneWire\DataSource;
 
+use Coff\DataSource\Exception\DataSourceException;
+
 class W1FileDataSource extends W1DataSource {
 
     /**
