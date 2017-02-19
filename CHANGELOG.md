@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## dev-master
+
+Server connection closed check added.
+Dependency `php-api-datasource` version updated.
+
 ## 0.0.2
 
 Extracted `DataSource` / `DataSourceInterface` into a separate repository for 

@@ -22,7 +22,7 @@
         }
     ],
     "require": {
-        "coff/php-api-datasource": "^0.0.2",
+        "coff/php-api-datasource": "^0.0.3",
         "monolog/monolog": "^1.22",
         "symfony/console": "^3.2"
     }
