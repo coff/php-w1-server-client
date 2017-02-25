@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 
 include (__DIR__ . '/../vendor/autoload.php');
 
-$w1client = new AsyncW1Client('tcp://0.0.0.0:8000');
+$w1client = new AsyncW1Client('unix://server.socket');
 $w1client->setLogger($logger = new ConsoleLogger(new ConsoleOutput(ConsoleOutput::VERBOSITY_NORMAL, $isDecorated=true, new OutputFormatter())));
 $sensors = [];
 
@@ -38,13 +38,13 @@ $w1client->setAutoDiscoveryCallback(function($id) use ($logger, &$sensors) {
 $w1client->setAutoDiscovery(true);
 while (true) {
     $w1client->update();
-
+    echo date('Y-m-d H:i:s')."\t|";
     /** @var Sensor $sensor */
     foreach ($sensors as $sensor) {
         echo $sensor->getDescription().':'.sprintf("%.1f", $sensor->update()->getValue())."\t|";
     }
-    echo "\r";
-    sleep(1);
+    echo "\n";
+    sleep(30);
 }
 
 

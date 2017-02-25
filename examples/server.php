@@ -11,7 +11,7 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 
 include (__DIR__ . '/../vendor/autoload.php');
 
-$s = new W1Server('tcp://0.0.0.0:8000');
+$s = new W1Server('unix://server.socket');
 $s->setLogger(new ConsoleLogger(new ConsoleOutput(ConsoleOutput::VERBOSITY_DEBUG, $isDecorated=true, new OutputFormatter())));
 $s->setTransport(new XmlW1ServerTransport());
 $s->init();

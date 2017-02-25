@@ -98,19 +98,19 @@ class AsyncW1Client extends W1Client
             return false;
         }
 
-        if (true === feof($this->socket)) {
-            # server disconnected us?
-            $this->logger->warning('Server terminated connection. Aborting request.');
-            $this->setState(self::STATE_OFFLINE);
-
-            return false;
-        }
-
         $this->failedRequests = 0;
 
         $dataString = '';
         while ($data = fread($this->socket, 2048)) {
             $dataString.= $data;
+        }
+
+        if ($dataString == '' && true === feof($this->socket)) {
+            # server disconnected us?
+            $this->logger->warning('Server terminated connection. Aborting request.');
+            $this->setState(self::STATE_OFFLINE);
+
+            return false;
         }
 
         $this->transport->parseReply($dataString);

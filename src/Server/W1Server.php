@@ -19,8 +19,9 @@ use Psr\Log\LogLevel;
 class W1Server extends Server
 {
     const
-        READING_OUTDATED_MIN = 3, // seconds
-        DISCOVERY_TIMEOUT = 60; // seconds
+        READINGS_TIMEOUT = 10, // seconds
+        DISCOVERY_TIMEOUT = 60, // seconds
+        DEADCONN_TIMEOUT = 120; // seconds
 
 
     /**
@@ -68,6 +69,11 @@ class W1Server extends Server
 
     public function init() {
         parent::init();
+
+        $this->addShortCycleCallback(self::DISCOVERY_TIMEOUT . 's', [$this, 'devicesDiscovery']);
+        $this->addShortCycleCallback(self::READINGS_TIMEOUT . 's', [$this, 'queryDevices']);
+        $this->addShortCycleCallback(self::DEADCONN_TIMEOUT . 's', [$this, 'terminateDeadConnections']);
+
         $this->devicesDiscovery();
     }
 
@@ -79,7 +85,7 @@ class W1Server extends Server
         return isset($this->dataSources[$id]) ? $this->dataSources[$id] : false;
     }
 
-    protected function devicesDiscovery() {
+    public function devicesDiscovery() {
         if (!$this->transport instanceof W1ServerTransport) {
             throw new OneWireServerException('Transport not set!');
         }
@@ -113,7 +119,7 @@ class W1Server extends Server
         $this->lastDiscoveryTime = time();
     }
 
-    protected function queryDevices() {
+    public function queryDevices() {
         $this->dataSourceStreams = array();
 
         /**
@@ -213,20 +219,6 @@ class W1Server extends Server
     public function each() {
 
         /**
-         * Perform dataSource discovery each at self::DISCOVERY_TIMEOUT
-         */
-        if ($this->lastDiscoveryTime < time()-self::DISCOVERY_TIMEOUT && true === $this->allCollected) {
-            $this->devicesDiscovery(); // performs discovery
-        }
-
-        /**
-         * Query dataSources' readings each self::READING_OUTDATED_MIN
-         */
-        if ($this->lastQueryTime < time()-self::READING_OUTDATED_MIN) {
-            $this->queryDevices();
-        }
-
-        /**
          * Got any reply from opened processes?
          */
         if ($this->dataSourceStreams && 0 < stream_select($streams = $this->dataSourceStreams, $w=null, $o=null, 0, $this->sleepTime)) {
@@ -263,8 +255,4 @@ class W1Server extends Server
         }
     }
 
-    public function everyMinute()
-    {
-        $this->terminateDeadConnections();
-    }
 }

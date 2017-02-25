@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "b96e2923f211260fca01358303ac5df2",
-    "content-hash": "4e7c2a4c3ff80323cdcc84d9914ab7d8",
+    "hash": "96d31817f9065fa12071a9d462edb122",
+    "content-hash": "714d822ccd0ac1047f97ce450310d5e9",
     "packages": [
         {
             "name": "coff/php-api-datasource",

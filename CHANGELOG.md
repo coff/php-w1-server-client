@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.0.4
+
+ShortCycleCallback functionality implemented for <24h cyclic calls.
+Removed everyMinute(), everyHour() calls (backward compatibility is broken).
+Additional unix socket already exists check.
+
 ## 0.0.3
 
 Some phpDoc added.
