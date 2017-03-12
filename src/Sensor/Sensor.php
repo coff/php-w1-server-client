@@ -41,6 +41,13 @@ abstract class Sensor implements SensorInterface, DataSourceInterface
     protected $value;
 
     /**
+     * Sensor value linear correction
+     *
+     * @var
+     */
+    protected $correction=0;
+
+    /**
      * Returns sensor's measure unit
      * @return mixed
      */
@@ -94,13 +101,37 @@ abstract class Sensor implements SensorInterface, DataSourceInterface
     }
 
     /**
+     * Sets linear correction for sensor
+     *
+     * @param double $correction
+     * @return $this
+     */
+    public function setCorrection($correction)
+    {
+        $this->correction = $correction;
+
+        return $this;
+    }
+
+    /**
+     * Returns linear correction set for this sensor (correction is also
+     * applied in the value automatically).
+     *
+     * @return mixed
+     */
+    public function getCorrection()
+    {
+        return $this->correction;
+    }
+
+    /**
      * Returns reading value for sensor.
      *
      * @return mixed
      */
     public function getValue()
     {
-        return $this->value;
+        return $this->value + $this->correction;
     }
 
     /**
