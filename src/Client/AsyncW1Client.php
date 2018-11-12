@@ -85,8 +85,9 @@ class AsyncW1Client extends W1Client
     }
 
     protected function awaitReply() {
+        $a = array($this->socket); $w=null; $o=null;
 
-        $gotReply = stream_select($a = array($this->socket), $w=null, $o=null, 0, $this->awaitSocket);
+        $gotReply = stream_select($a, $w, $o, 0, $this->awaitSocket);
 
         if (0 === $gotReply) {
 

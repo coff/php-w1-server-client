@@ -162,7 +162,9 @@ class W1Server extends Server
     }
 
     public function handleConnections() {
-        $result = stream_select($connections = $this->connections, $w=null, $o=null, 0, $this->sleepTime);
+        $connections = $this->connections; $w=null; $o=null;
+
+        $result = stream_select($connections, $w, $o, 0, $this->sleepTime);
 
         if (false === $result) {
             return false;
