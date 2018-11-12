@@ -221,14 +221,18 @@ class W1Server extends Server
         /**
          * Got any reply from opened processes?
          */
-        if ($this->dataSourceStreams && 0 < stream_select($streams = $this->dataSourceStreams, $w=null, $o=null, 0, $this->sleepTime)) {
+        $streams = $this->dataSourceStreams; $w=null; $o=null;
+
+        if ($this->dataSourceStreams && 0 < stream_select($streams, $w, $o, 0, $this->sleepTime)) {
             $this->readReadings($streams);
         }
 
         /**
          * Or any incoming client connection?
          */
-        if (0 < stream_select($sockets = array($this->socket), $w=null, $o=null, 0, $this->sleepTime)) {
+        $sockets = array($this->socket); $w=null; $o=null;
+
+        if (0 < stream_select($sockets, $w, $o, 0, $this->sleepTime)) {
             $this->connections[] = $connection = stream_socket_accept($this->socket, $this->peerTimeout, $peerName = '');
             stream_set_blocking($connection, false);
             $this->logger->debug('Accepted connection from peer ');
