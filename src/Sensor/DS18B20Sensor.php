@@ -39,6 +39,11 @@ class DS18B20Sensor extends W1Sensor
 
     protected function parseReading($reading) {
         $lines = explode("\n", $reading);
+
+        if (count($lines) < 2) {
+            return;
+        }
+
         $crcLine = trim($lines[0]);
         $valueLine = trim($lines[1]);
         if (substr($crcLine,-1) == 'S') { // YE(S)
